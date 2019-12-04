@@ -44,6 +44,8 @@ import static android.widget.LinearLayout.VERTICAL;
 public class CirclePageIndicator extends View implements PageIndicator {
     private static final int INVALID_POINTER = -1;
 
+    // padding between two dots
+    private float mDotPadding;
     private float mRadius;
     private final Paint mPaintPageFill = new Paint(ANTI_ALIAS_FLAG);
     private final Paint mPaintStroke = new Paint(ANTI_ALIAS_FLAG);
@@ -101,7 +103,8 @@ public class CirclePageIndicator extends View implements PageIndicator {
         mPaintFill.setColor(a.getColor(R.styleable.CirclePageIndicator_fillColor, defaultFillColor));
         mRadius = a.getDimension(R.styleable.CirclePageIndicator_radius, defaultRadius);
         mSnap = a.getBoolean(R.styleable.CirclePageIndicator_snap, defaultSnap);
-
+        mDotPadding = a.getDimension(R.styleable.CirclePageIndicator_dotpadding, 0);
+        
         Drawable background = a.getDrawable(R.styleable.CirclePageIndicator_android_background);
         if (background != null) {
           setBackgroundDrawable(background);
@@ -194,6 +197,15 @@ public class CirclePageIndicator extends View implements PageIndicator {
         return mSnap;
     }
 
+    public void setDotPadding(float dotPadding) {
+        mDotPadding = dotPadding;
+        invalidate();
+    }
+
+    public float getDotPadding() {
+        return mDotPadding;
+    }
+    
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -227,11 +239,25 @@ public class CirclePageIndicator extends View implements PageIndicator {
             shortPaddingBefore = getPaddingLeft();
         }
 
-        final float threeRadius = mRadius * 3;
+        // final float threeRadius = mRadius * 3;
+        // final float shortOffset = shortPaddingBefore + mRadius;
+        // float longOffset = longPaddingBefore + mRadius;
+        // if (mCentered) {
+        //     longOffset += ((longSize - longPaddingBefore - longPaddingAfter) / 2.0f) - ((count * threeRadius) / 2.0f);
+        // }
+        
+        if (mDotPadding == 0) {
+          mDotPadding = mRadius;
+        }
+        final float threeRadius = mRadius * 2 + mDotPadding;
         final float shortOffset = shortPaddingBefore + mRadius;
         float longOffset = longPaddingBefore + mRadius;
         if (mCentered) {
-            longOffset += ((longSize - longPaddingBefore - longPaddingAfter) / 2.0f) - ((count * threeRadius) / 2.0f);
+              if (count > 1) {
+                        longOffset += (longSize - longPaddingBefore - longPaddingAfter) / 2.0f - (count * 2 * mRadius + (count - 1) * mDotPadding) / 2.0f;
+              } else {
+                     longOffset += (longSize - longPaddingBefore - longPaddingAfter) / 2.0f - mRadius;
+              }
         }
 
         float dX;
